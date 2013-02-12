@@ -13,10 +13,12 @@ Example circuit:
               R1(160)
 */
 
+#define NUM_STATES 4
+
 class StrobeTuner {
   public:
     // Amount of time in microseconds the LEDs are turned on for each cycle.
-    static const unsigned int STROBE = 250u;
+    static const unsigned int STROBE_DURATION = 250u;
 
     StrobeTuner(int led1_pin, int led2_pin) {
       pinMode(led1_pin, OUTPUT);
@@ -26,40 +28,35 @@ class StrobeTuner {
 
       led_pins_[0] = led1_pin;
       led_pins_[1] = led2_pin;
-      state_ = 0;
-      last_state_change_time_ = 0u;
-      note_period_ = 0u;
     }
 
     // Set the tuning note from its period in microseconds.
     void tune(unsigned int note_period) {
-      state_ = (note_period == 0u ? 4 : 0);
-      last_state_change_time_ = (unsigned int)micros();
-      note_period_ = note_period;
+      unsigned int off = (note_period >> 1) - STROBE_DURATION;
 
-      // Theoretically we should digitalWrite() the pins here to reset them to
-      // a known state, but this thing runs so fast you won't notice.
+      state_ = (note_period == 0u ? NUM_STATES : 0);
+      state_durations_[0] = off;
+      state_durations_[1] = STROBE_DURATION;
+      state_durations_[2] = note_period - off - (STROBE_DURATION << 1);
+      state_durations_[3] = STROBE_DURATION;
+      last_state_change_time_ = (unsigned int)micros();
+
+      digitalWrite(led_pins_[0], LOW);
+      digitalWrite(led_pins_[1], LOW);
     }
 
-    void update() {
+    inline void update() {
       update((unsigned int)micros());
     }
 
     void update(unsigned int current_time_) {
-      if(state_ >= 4)
+      if(state_ >= NUM_STATES)
         return;
 
-      boolean on = (state_ & 0x1); // Odds are LEDs on.
-      unsigned int duration = (on ? STROBE : (note_period_ >> 1) - STROBE);
-      // TODO: keep track of cycle_started_time_ or something, to cut down on
-      // the error of >> 1 here; set last_state_change_time_ to
-      // cycle_started_time_ + note_period_ when the cycle loops.
-
-      if(current_time_ - last_state_change_time_ > duration) {
-        int led = (state_ >= 3);
-        digitalWrite(led_pins_[led], on);
+      if(current_time_ - last_state_change_time_ >= state_durations_[state_]) {
+        digitalWrite(led_pins_[state_ >= 2], !(state_ & 0x1));
+        last_state_change_time_ += state_durations_[state_];
         state_ = (state_ + 1) & 0x3;
-        last_state_change_time_ += duration;
       }
     }
 
@@ -67,6 +64,6 @@ class StrobeTuner {
     int led_pins_[2];
     int state_; // 0: LEDs off, waiting for LED1; 1: LED1 on; 2: LEDs off,
                 // waiting for LED2; 3: LED2 on; 4+: not running
+    unsigned int state_durations_[4];
     unsigned int last_state_change_time_;
-    unsigned int note_period_;
 };
