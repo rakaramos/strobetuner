@@ -20,23 +20,26 @@
 #define STROBETUNER_H
 
 /*
-Example circuit:
-___
- A |-(LED1 pin) ---|>|-----+
- R |              LED1(R)  |
- D |                       |
- U |-(LED2 pin)----|>|-----+
- I |              LED2(G)  |
- N |             ______    |
- O |-(GND) -----|______|---+
-___|             R1(160)
+  Example circuit:
+   ___
+  | A |-(LED1 pin) ---|>|-----+
+  | R |              LED1(R)  |
+  | D |                       |
+  | U |-(LED2 pin)----|>|-----+
+  | I |              LED2(G)  |
+  | N |             ______    |
+  | O |-(GND) -----|______|---+
+  |___|             R1(160)
 
+  For optimum effect, use clear LEDs, one red and one green.  Use whatever
+  resistor value is safe for your LEDs at the Arduino's 5V.  Each LED will only
+  be lit for STROBE_DURATION (below) microseconds at a time; never will both
+  LEDs be lit simultaneously.
 */
 
 class StrobeTuner {
   public:
-    // Standard 7-string tuning, period (1/frequency of note) in microseconds.
-    static const unsigned int PERIOD_B1 = 16198u; // 1/61.735 Hz, in us.
+    // Standard 6-string tuning, period (1/frequency of note) in microseconds.
     static const unsigned int PERIOD_E2 = 12135u; // 1/82.407 Hz, in us.
     static const unsigned int PERIOD_A2 = 9091u; // 1/110.00 Hz, in us.
     static const unsigned int PERIOD_D3 = 6811u; // 1/146.83 Hz, in us.
@@ -44,7 +47,7 @@ class StrobeTuner {
     static const unsigned int PERIOD_B3 = 4050u; // 1/246.94 Hz, in us.
     static const unsigned int PERIOD_E4 = 3034u; // 1/329.63 Hz, in us.
     // To get the values for other notes, try searching wolframalpha.com for
-    // "frequency of note c3" or some other note, and doing the arithmetic.
+    // e.g. "frequency of note c3", and doing the arithmetic.
 
     // Amount of time in microseconds each LED is turned on each period.
     static const unsigned int STROBE_DURATION = 250u;
