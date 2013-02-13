@@ -41,6 +41,8 @@ void StrobeTuner::tune(unsigned int note_period, unsigned int current_micros) {
   state_ = (note_period == 0u ? STATE_IDLE : 0);
   state_durations_[0] = off_duration;
   state_durations_[1] = STROBE_DURATION;
+  // If note_period is even, this will be = off_duration; but if note_period is
+  // odd, this longer expression keeps our overall period equal to note_period.
   state_durations_[2] = note_period - off_duration - (STROBE_DURATION << 1);
   state_durations_[3] = STROBE_DURATION;
   last_state_change_time_ = current_micros;
