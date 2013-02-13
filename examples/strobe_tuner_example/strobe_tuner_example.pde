@@ -5,7 +5,7 @@
 // out the correct value here for your arduino means either some sophisticated
 // timing equipment or having another strobe tuner on hand to compare it with.
 // Good luck.  You may find it works adequately without a multiplier here.
-#define CLOCK_SPEED 0.999f
+static const float CLOCK_SPEED = 0.999f;
 
 // See StrobeTuner.h for an example circuit.  In this case, "LED1 pin" is 7 and
 // "LED2 pin" is 8.
