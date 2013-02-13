@@ -16,7 +16,7 @@ the added benefit of being able to tune to any note I want.
 
 Hence, StrobeTuner, an Arduino library for creating your own "strobe" tuner out
 of two LEDs and a resistor.  See
-[StrobeTuner.h][https://raw.github.com/chazomaticus/strobetuner/master/StrobeTuner.h]
+[StrobeTuner.h](https://raw.github.com/chazomaticus/strobetuner/master/StrobeTuner.h)
 for the example circuit, or see the image below.  You might want to mount the
 components somewhere you can easily shine the LEDs on your guitar strings.
 
