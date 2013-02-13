@@ -28,16 +28,17 @@ class StrobeTuner {
 
       led_pins_[0] = led1_pin;
       led_pins_[1] = led2_pin;
+      state_ = NUM_STATES;
     }
 
     // Set the tuning note from its period in microseconds.
     void tune(unsigned int note_period) {
-      unsigned int off = (note_period >> 1) - STROBE_DURATION;
+      unsigned int off_duration = (note_period >> 1) - STROBE_DURATION;
 
       state_ = (note_period == 0u ? NUM_STATES : 0);
-      state_durations_[0] = off;
+      state_durations_[0] = off_duration;
       state_durations_[1] = STROBE_DURATION;
-      state_durations_[2] = note_period - off - (STROBE_DURATION << 1);
+      state_durations_[2] = note_period - off_duration - (STROBE_DURATION << 1);
       state_durations_[3] = STROBE_DURATION;
       last_state_change_time_ = (unsigned int)micros();
 
@@ -46,14 +47,18 @@ class StrobeTuner {
     }
 
     inline void update() {
-      update((unsigned int)micros());
+      update(micros());
     }
 
-    void update(unsigned int current_time_) {
+    inline void update(unsigned long current_micros) {
+      update((unsigned int)current_micros);
+    }
+
+    void update(unsigned int current_micros) {
       if(state_ >= NUM_STATES)
         return;
 
-      if(current_time_ - last_state_change_time_ >= state_durations_[state_]) {
+      if(current_micros - last_state_change_time_ >= state_durations_[state_]) {
         digitalWrite(led_pins_[state_ >= 2], !(state_ & 0x1));
         last_state_change_time_ += state_durations_[state_];
         state_ = (state_ + 1) & 0x3;
