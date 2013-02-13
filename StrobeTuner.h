@@ -17,6 +17,17 @@ ___|             R1(160)
 
 class StrobeTuner {
   public:
+    // Standard 7-string tuning, period (1/frequency of note) in microseconds.
+    static const unsigned int PERIOD_B1 = 16198u; // 1/61.735 Hz, in us.
+    static const unsigned int PERIOD_E2 = 12135u; // 1/82.407 Hz, in us.
+    static const unsigned int PERIOD_A2 = 9091u; // 1/110.00 Hz, in us.
+    static const unsigned int PERIOD_D3 = 6811u; // 1/146.83 Hz, in us.
+    static const unsigned int PERIOD_G3 = 5102u; // 1/196.00 Hz, in us.
+    static const unsigned int PERIOD_B3 = 4050u; // 1/246.94 Hz, in us.
+    static const unsigned int PERIOD_E4 = 3034u; // 1/329.63 Hz, in us.
+    // To get the values for other notes, try searching wolframalpha.com for
+    // "frequency of note c3" or some other note, and doing the arithmetic.
+
     // Amount of time in microseconds each LED is turned on each period.
     static const unsigned int STROBE_DURATION = 250u;
 
