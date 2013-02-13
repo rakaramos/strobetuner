@@ -1,6 +1,13 @@
 StrobeTuner
 ===========
 
+StrobeTuner is an Arduino library for creating simple "strobe" guitar tuners.
+
+<https://github.com/chazomaticus/strobetuner>
+
+About
+-----
+
 A while back I bought a little "strobe" tuner (see [MusiciansFriend][1] or
 [Amazon][2]) for my guitar.  I use "strobe" in quotes because it turns out it's
 just a couple of LEDs on a variable timer.  I've been learning my way around an
@@ -8,10 +15,12 @@ Arduino, and thought I could make my own "strobe" tuner for pretty cheap, with
 the added benefit of being able to tune to any note I want.
 
 Hence, StrobeTuner, an Arduino library for creating your own "strobe" tuner out
-of two LEDs and a resistor.  You might want to mount them somewhere you can
-easily shine them on your guitar strings.
+of two LEDs and a resistor.  See
+[StrobeTuner.h][https://raw.github.com/chazomaticus/strobetuner/master/StrobeTuner.h]
+for the example circuit, or see the image below.  You might want to mount the
+components somewhere you can easily shine the LEDs on your guitar strings.
 
-<https://github.com/chazomaticus/strobetuner>
+![Example Circuit](https://raw.github.com/chazomaticus/strobetuner/master/strobetuner-circuit.jpg)
 
 Accuracy
 --------
@@ -29,8 +38,8 @@ and my code is rife with bugs.  Your mileage may vary.
 Installation
 ------------
 
-To install, put this code under your Arduino sketchbook's libraries directory.
-See <http://arduino.cc/en/Guide/Libraries> for details.
+To install, put this code in a subdirectory of your Arduino sketchbook's
+libraries directory.  See <http://arduino.cc/en/Guide/Libraries> for details.
 
 
 Enjoy!
