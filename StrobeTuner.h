@@ -1,74 +1,45 @@
-#include "Arduino.h"
+#ifndef STROBETUNER_H
+#define STROBETUNER_H
 
 /*
 Example circuit:
+___
+ A |-(out pin 1) ---|>|-----+
+ R |               LED1(R)  |
+ D |                        |
+ U |-(out pin 2)----|>|-----+
+ I |               LED2(G)  |
+ N |             ______     |
+ O |-(GND) -----|______|----+
+___|             R1(160)
 
-- (out pin 1) ---|>|-----+
-                LED1(R)  |
-                         |
-- (out pin 2) ---|>|-----+
-                LED2(G)  |
-              ______     |
-- (GND) -----|______|----+
-              R1(160)
 */
-
-#define NUM_STATES 4
 
 class StrobeTuner {
   public:
-    // Amount of time in microseconds the LEDs are turned on for each cycle.
+    // Amount of time in microseconds each LED is turned on each period.
     static const unsigned int STROBE_DURATION = 250u;
 
-    StrobeTuner(int led1_pin, int led2_pin) {
-      pinMode(led1_pin, OUTPUT);
-      pinMode(led2_pin, OUTPUT);
-      digitalWrite(led1_pin, LOW);
-      digitalWrite(led2_pin, LOW);
+    StrobeTuner(int led1_pin, int led2_pin);
 
-      led_pins_[0] = led1_pin;
-      led_pins_[1] = led2_pin;
-      state_ = NUM_STATES;
-    }
+    // Set the tuning note from its period in microseconds.  Call once to set
+    // the note; update() actually flashes the LEDs.  note_period is the period
+    // (1/frequency) of the note to tune to, in microseconds (so actually,
+    // 1000000/frequency in Hz).  current_micros is the current value of
+    // micros() typecast to unsigned int.
+    void tune(unsigned int note_period, unsigned int current_micros);
 
-    // Set the tuning note from its period in microseconds.
-    void tune(unsigned int note_period) {
-      unsigned int off_duration = (note_period >> 1) - STROBE_DURATION;
-
-      state_ = (note_period == 0u ? NUM_STATES : 0);
-      state_durations_[0] = off_duration;
-      state_durations_[1] = STROBE_DURATION;
-      state_durations_[2] = note_period - off_duration - (STROBE_DURATION << 1);
-      state_durations_[3] = STROBE_DURATION;
-      last_state_change_time_ = (unsigned int)micros();
-
-      digitalWrite(led_pins_[0], LOW);
-      digitalWrite(led_pins_[1], LOW);
-    }
-
-    inline void update() {
-      update(micros());
-    }
-
-    inline void update(unsigned long current_micros) {
-      update((unsigned int)current_micros);
-    }
-
-    void update(unsigned int current_micros) {
-      if(state_ >= NUM_STATES)
-        return;
-
-      if(current_micros - last_state_change_time_ >= state_durations_[state_]) {
-        digitalWrite(led_pins_[state_ >= 2], !(state_ & 0x1));
-        last_state_change_time_ += state_durations_[state_];
-        state_ = (state_ + 1) & 0x3;
-      }
-    }
+    // Run the state machine, flashing the LEDs on the pins given in the
+    // constructor.  Must be called very frequently to be accurate.
+    // current_micros is the current value of micros() typecast to unsigned
+    // int.
+    void update(unsigned int current_micros);
 
   private:
     int led_pins_[2];
-    int state_; // 0: LEDs off, waiting for LED1; 1: LED1 on; 2: LEDs off,
-                // waiting for LED2; 3: LED2 on; 4+: not running
+    int state_;
     unsigned int state_durations_[4];
     unsigned int last_state_change_time_;
 };
+
+#endif
