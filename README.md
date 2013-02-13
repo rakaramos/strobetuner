@@ -26,6 +26,12 @@ fixes the error on my Arduino.
 It's also possible I just don't understand precise timing on the Arduino yet,
 and my code is rife with bugs.  Your mileage may vary.
 
+Installation
+------------
+
+To install, put this code under your Arduino sketchbook's libraries directory.
+See <http://arduino.cc/en/Guide/Libraries> for details.
+
 
 Enjoy!
 
