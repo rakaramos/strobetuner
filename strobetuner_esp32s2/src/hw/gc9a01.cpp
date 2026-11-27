@@ -146,6 +146,7 @@ bool gc9a01_init(int sck, int mosi, int cs, int dc, int rst, uint32_t spi_hz,
 }
 
 void gc9a01_draw(int x1, int y1, int x2, int y2, const void *pixels) {
+  if (!io) { if (s_done) s_done(s_ctx); return; }   /* init failed: never stall LVGL */
   uint8_t ca[4] = {(uint8_t)(x1 >> 8), (uint8_t)x1, (uint8_t)(x2 >> 8), (uint8_t)x2};
   uint8_t ra[4] = {(uint8_t)(y1 >> 8), (uint8_t)y1, (uint8_t)(y2 >> 8), (uint8_t)y2};
   esp_lcd_panel_io_tx_param(io, 0x2A, ca, 4);   /* column address */

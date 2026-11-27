@@ -1,5 +1,5 @@
 /*
-  StrobeTuner for ESP32-S2 with a GC9A01 round display and a rotary encoder.
+  StrobeTuner for ESP32-S3 / ESP32-S2 with a GC9A01 round display and a rotary encoder.
   Based on StrobeTuner (chazomaticus/strobetuner,
   Copyright 2013 Charles Lindsay).
 
@@ -18,15 +18,13 @@
   Library (Arduino Library Manager): "lvgl" 9.6.x.
   Copy ../lv_conf.h to <sketchbook>/libraries/lv_conf.h.
 
-  Wiring (all 3.3 V) -- change the pins below to suit your board
-    LED1 red     GPIO7  -- 68R -- LED -- GND
-    LED2 green   GPIO8  -- 39R..68R -- LED -- GND
-    GC9A01       SCL/SCK GPIO36, SDA/MOSI GPIO35, CS GPIO34, DC GPIO38,
-                 RST GPIO33, BL GPIO21, VCC 3V3, GND
-    Encoder      A GPIO9, B GPIO10, SW GPIO11, C/GND to GND
-                 (internal pull-ups are used; most KY-040 boards also have them)
-    BOOT button  GPIO0 also works as "press"
-    Ref. tone    GPIO12 -- 100R -- passive piezo -- GND   (optional; off by default)
+  Wiring (all 3.3 V): see docs/breadboard.md and the pin table below.
+    ESP32-S3: LEDs 7/8, display SCK 12 MOSI 11 CS 10 DC 9 RST 14 BL 13,
+              encoder A 4 B 5 SW 6, tone 15
+    ESP32-S2: LEDs 7/8, display SCK 36 MOSI 35 CS 34 DC 38 RST 33 BL 21,
+              encoder A 9 B 10 SW 11, tone 12
+    LED1 red via 68R, LED2 green via 39R..68R, piezo via 100R, all to GND.
+    BOOT button also works as "press".
 
   Controls
     Tuner:        turn = string, press = tuning list, hold = strobe on/off
@@ -49,14 +47,26 @@
 #include "src/hw/gc9a01.h"
 
 // ---- Pins -----------------------------------------------------------------
+// Chosen per chip at compile time. See docs/breadboard.md for the wiring.
+#if CONFIG_IDF_TARGET_ESP32S3
+// ESP32-S3-DevKitC-1 and clones (e.g. N16R8 boards with two USB-C ports).
+// Everything is on the left header, GPIO 4..15. Avoids GPIO 35-37 (used by
+// octal PSRAM on R8 modules), 19/20 (USB), 0/3/45/46 (strapping), 43/44 (UART).
+static const gpio_num_t LED1_PIN = GPIO_NUM_7;
+static const gpio_num_t LED2_PIN = GPIO_NUM_8;
+static const gpio_num_t TONE_PIN = GPIO_NUM_15;   // reference square wave (optional)
+static const int TFT_SCK = 12, TFT_MOSI = 11, TFT_CS = 10, TFT_DC = 9,
+                 TFT_RST = 14, TFT_BL = 13;
+static const int ENC_A = 4, ENC_B = 5, ENC_SW = 6, BOOT_BTN = 0;
+#else
+// ESP32-S2 (Saola-1, DevKitM-1, Lolin S2 Mini).
 static const gpio_num_t LED1_PIN = GPIO_NUM_7;
 static const gpio_num_t LED2_PIN = GPIO_NUM_8;
 static const gpio_num_t TONE_PIN = GPIO_NUM_12;   // reference square wave (optional)
-
 static const int TFT_SCK = 36, TFT_MOSI = 35, TFT_CS = 34, TFT_DC = 38,
                  TFT_RST = 33, TFT_BL = 21;
-
 static const int ENC_A = 9, ENC_B = 10, ENC_SW = 11, BOOT_BTN = 0;
+#endif
 static const int ENC_COUNTS_PER_DETENT = 4;  // most encoders; try 2 if it skips
 static const bool ENC_REVERSE = false;       // flip if CW goes the wrong way
 

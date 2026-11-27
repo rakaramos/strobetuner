@@ -1,6 +1,6 @@
 # StrobeTuner
 
-A "strobe" guitar tuner for the ESP32-S2, with a 240×240 round GC9A01 display and a rotary encoder.
+A "strobe" guitar tuner for the ESP32-S3 (or ESP32-S2), with a 240×240 round GC9A01 display and a rotary encoder.
 
 It started as a port of [StrobeTuner](https://github.com/chazomaticus/strobetuner), an Arduino library by Charles Lindsay (2013), and has grown into a standalone project.
 
@@ -24,12 +24,12 @@ These images come straight from the simulator (`./build/strobetuner_sim --shots 
 │       ├── core/strobe_math.h   LED flash schedule (same code on device and in tests)
 │       ├── ui/ui.*              ← all screens, themes and menus live here
 │       └── hw/gc9a01.*          display driver (ESP-IDF esp_lcd, SPI + DMA)
-├── docs/                        README images
+├── docs/                        breadboard guide, wiring diagram, screenshots
 └── simulator/                   runs src/ui on your Mac in a round window,
                                  plus strobe_test (timing checks)
 ```
 
-`src/ui` and `src/core` are compiled unchanged for both the ESP32-S2 and the Mac. Whatever you design in the simulator is exactly what the device shows.
+`src/ui` and `src/core` are compiled unchanged for the ESP32 and the Mac. Whatever you design in the simulator is exactly what the device shows.
 
 ## Designing the UI on your Mac
 
@@ -71,7 +71,7 @@ The terminal prints what the strobe would be set to after each change.
 
 ## Hardware
 
-- ESP32-S2 board (ESP32-S2-Saola / DevKitM, Lolin/Wemos S2 Mini, or similar)
+- ESP32-S3 board: ESP32-S3-DevKitC-1 or a clone (e.g. the N16R8 boards with two USB-C ports). ESP32-S2 boards (Saola-1, DevKitM-1, Lolin S2 Mini) also work, with their own pin map
 - GC9A01 1.28″ 240×240 round display module (SPI)
 - Rotary encoder with push switch (e.g. KY-040 or a bare EC11)
 - Red and green LEDs (clear lens, high brightness), with 68 Ω resistor for the red and 39–68 Ω for the green
@@ -79,24 +79,30 @@ The terminal prints what the strobe would be set to after each change.
 
 ## Wiring
 
-| Part | Pin | ESP32-S2 |
-|---|---|---|
-| LED1 (red) | via 68 Ω to GND | GPIO7 |
-| LED2 (green) | via 39–68 Ω to GND | GPIO8 |
-| GC9A01 | SCL / SCK | GPIO36 |
-| | SDA / MOSI | GPIO35 |
-| | CS | GPIO34 |
-| | DC | GPIO38 |
-| | RST | GPIO33 |
-| | BL (backlight) | GPIO21 |
-| | VCC / GND | 3V3 / GND |
-| Encoder | A (CLK) | GPIO9 |
-| | B (DT) | GPIO10 |
-| | SW | GPIO11 |
-| | C / GND | GND |
-| Piezo (optional) | via 100 Ω, other leg to GND | GPIO12 |
+**Building it for the first time?** Follow the step-by-step [breadboard guide](docs/breadboard.md). It builds and tests one part at a time and has a troubleshooting table.
 
-All pins are set at the top of the sketch. Don't use the strapping pins GPIO0, 45 or 46. The board's BOOT button also works as "press".
+![Breadboard wiring diagram](docs/wiring.svg)
+
+| Part | Pin | ESP32-S3 | ESP32-S2 |
+|---|---|---|---|
+| LED1 (red) | via 68 Ω to GND | GPIO7 | GPIO7 |
+| LED2 (green) | via 39–68 Ω to GND | GPIO8 | GPIO8 |
+| GC9A01 | SCL / SCK | GPIO12 | GPIO36 |
+| | SDA / MOSI | GPIO11 | GPIO35 |
+| | CS | GPIO10 | GPIO34 |
+| | DC | GPIO9 | GPIO38 |
+| | RST | GPIO14 | GPIO33 |
+| | BL (backlight) | GPIO13 | GPIO21 |
+| | VCC / GND | 3V3 / GND | 3V3 / GND |
+| Encoder | A (CLK) | GPIO4 | GPIO9 |
+| | B (DT) | GPIO5 | GPIO10 |
+| | SW | GPIO6 | GPIO11 |
+| | + / GND | 3V3 / GND | 3V3 / GND |
+| Piezo (optional) | via 100 Ω, other leg to GND | GPIO15 | GPIO12 |
+
+The sketch picks the pin map for the chip you compile for. On the S3 every signal is on the left header (GPIO 4–15) and stays clear of GPIO 35–37, which N16R8 modules use for their PSRAM.
+
+All pins are set at the top of the sketch. Don't move anything onto the boot/strapping pins (GPIO0, 3, 45, 46), or onto GPIO19/20 (USB). The board's BOOT button also works as "press".
 
 If turning the encoder clockwise moves backwards, set `ENC_REVERSE = true`. If one detent moves two steps, or it takes two detents to move one step, change `ENC_COUNTS_PER_DETENT` (4 or 2).
 
@@ -123,14 +129,18 @@ Everything, including the tuning and string you were on and your Open strings, i
 3. In **Library Manager**, install **lvgl** version 9.6.x.
 4. Copy `lv_conf.h` to your sketchbook's `libraries` folder, so it sits *next to* the `lvgl` folder (usually `~/Documents/Arduino/libraries/lv_conf.h`).
 5. Open `strobetuner_esp32s2/strobetuner_esp32s2.ino`.
-6. Select **ESP32S2 Dev Module** or **LOLIN S2 Mini**, and set **USB CDC On Boot: Enabled**.
+6. Select your board:
+   - **ESP32-S3 (N16R8 DevKitC-1 style):** **ESP32S3 Dev Module**, Flash Size **16MB**, PSRAM **OPI PSRAM** or Disabled.
+   - **ESP32-S2:** **ESP32S2 Dev Module** or **LOLIN S2 Mini**.
+
+   Set **USB CDC On Boot** to **Enabled** if you're plugged into the board's native **USB** port, or **Disabled** if you're using its **COM/UART** port.
 7. Upload. If it won't connect, hold **BOOT**, tap **RESET**, release **BOOT**, then upload again.
 
 With arduino-cli:
 
 ```
-arduino-cli compile --fqbn esp32:esp32:esp32s2 strobetuner_esp32s2
-arduino-cli upload  --fqbn esp32:esp32:esp32s2 -p /dev/cu.usbmodem* strobetuner_esp32s2
+arduino-cli compile --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi,CDCOnBoot=cdc strobetuner_esp32s2
+arduino-cli upload  --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi,CDCOnBoot=cdc -p /dev/cu.usbmodem* strobetuner_esp32s2
 ```
 
 ### Serial commands (optional, 115200 baud)
