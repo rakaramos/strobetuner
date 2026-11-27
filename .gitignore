@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+._*
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Simulator (CMake build output and --shots screenshots)
+esp32s2/simulator/build/
+esp32s2/simulator/shots/
+build/
+cmake-build-*/
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+
+# Arduino / ESP32 build artefacts ("Export compiled binary", arduino-cli, PlatformIO)
+esp32s2/strobetuner_esp32s2/build/
+*.bin
+*.elf
+*.map
+.pio/
